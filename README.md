@@ -96,11 +96,13 @@
 ### Folder Structure
 ```
 ├── src
-|   ├── server.js # Server layer, starts up server, connects to db.
-|   ├── routes  # Contains API endpoints and routes.
-|   ├── models  # db Models and access functions.
-|   ├── tests   # Test suit
-|   ├── config  # Configurations and env variables.
+    ├── server.js # Server layer, starts up server, connects to db.
+    ├── routes  # Contains API endpoints and routes.
+    ├── models  # db Models and access functions.
+    ├── tests   # Test suit
+    ├── config  # Configurations and env variables.
+    ├── db
+        ├── index.js
 ```
 ### Endpoints
 Defines endpoint as *endpoint* with params ***param1***...***paramN*** that returns type TYPE and value VALUE.
