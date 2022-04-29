@@ -92,6 +92,9 @@
 - cors
 - passport.js
 - express.js
+- sequalize
+- chai
+- mocha
 
 ### Folder Structure
 ```
@@ -198,5 +201,3 @@ Defines endpoint as *endpoint* with params ***param1***...***paramN*** that retu
 |   |
 |   ├──main.jsx
 ```
-
-
