@@ -10,9 +10,10 @@ const Message = require("../models/Message");
 const Recommendation = require("../models/Recommendation");
 const Requirement = require("../models/Requirement");
 const Searcher = require("../models/Searcher");
+const { searcherNotNull } = require("../utils/Validate");
 
 describe("Basic sequalize Test", function () {
-  it("Should work", async () => {
+  it("Should work", async function () {
     try {
       await sequelize.authenticate();
     } catch (err) {
@@ -22,7 +23,7 @@ describe("Basic sequalize Test", function () {
 });
 
 describe("Basic searcher", function () {
-  it("Make a Searcher", async () => {
+  it("Make a Searcher", async function () {
     await Searcher.sync({ force: true });
     const user = await Searcher.create({
       name: "aaryan",
@@ -59,8 +60,8 @@ describe("Basic investor", function () {
   });
 });
 
-describe("Send a message from a searcher", () => {
-  it("Make a Searcher", async () => {
+describe("Send a message from a searcher", function () {
+  it("Make a Searcher", async function () {
     await Searcher.sync({ force: true });
     await Message.sync({ force: true });
     const user = await Searcher.create({
@@ -85,39 +86,134 @@ describe("Send a message from a searcher", () => {
     });
     assert.isObject(result1, "Eerror in Message:User relationship");
   });
+});
 
-  describe("Making a full fledged Searcher", () => {
-    it("Making New Searcher...", async () => {
-      await Searcher.sync({ force: true });
-      await Requirement.sync({ force: true });
-      await Experience.sync({ force: true });
-      const user = await Searcher.create({
-        name: "Shreyaansh Chhabra",
-        email: "idontdocoffee@gmail.com",
-        password: "valueinvestor4lyf",
-        about:
-          "Hi, I'm a rising sophomore at UC Berkeley studying economics. My interests include public markets investing, standup comedy, and rap music.\n I have interned at Berkshire Hathaway as an Investment Analyst focusing on fundamentals-driven public equities \n I am working towards a B.A. in Economics at UC Berkeley \n For recommendations, don't hesitate to get in touch with Mr. Warren Buffet (CEO of Berkshire Hathaway) or Mr. Charlie Munger (Vice President of Berkshire Hathaway)\n",
-        searchTime: 36,
-        sectorPreference: "Physical Security and Video Surveillance",
-      });
-      const requirement = await Requirement.create({
+describe("Making a full fledged Searcher", function () {
+  it("Making New Searcher...", async function () {
+    await Searcher.sync({ force: true });
+    await Requirement.sync({ force: true });
+    await Experience.sync({ force: true });
+    const user = await Searcher.create({
+      name: "Shreyaansh Chhabra",
+      email: "idontdocoffee@gmail.com",
+      password: "valueinvestor4lyf",
+      about:
+        "Hi, I'm a rising sophomore at UC Berkeley studying economics. My interests include public markets investing, standup comedy, and rap music.\n I have interned at Berkshire Hathaway as an Investment Analyst focusing on fundamentals-driven public equities \n I am working towards a B.A. in Economics at UC Berkeley \n For recommendations, don't hesitate to get in touch with Mr. Warren Buffet (CEO of Berkshire Hathaway) or Mr. Charlie Munger (Vice President of Berkshire Hathaway)\n",
+      searchTime: 36,
+      sectorPreference: "Physical Security and Video Surveillance",
+    });
+    const requirement = await Requirement.create({
+      total: 500000,
+      breakdown: {
+        salary: 150000,
+        expenses: 100000,
+      },
+    });
+    const berkeley = await Experience.create({
+      name: "University of California, Berkeley",
+      typeOf: "Education",
+      description: "I studied for x years blah blah",
+      time: Date.now(),
+    });
+    await user.addExperience(berkeley);
+    await user.setRequirement(requirement);
+
+    const result = await Searcher.findByEmail("idontdocoffee@gmail.com");
+    console.log(result.toJSON());
+  });
+});
+
+describe("Test 6: Searcher.createSearcherBasic", function () {
+  it("create searcher and validate", async function () {
+    await Searcher.sync({ force: true });
+    await Requirement.sync({ force: true });
+    await Experience.sync({ force: true });
+    const searcher = await Searcher.createSearcherBasic({
+      name: "Aaryan Punia",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    searcherNotNull(searcher);
+  });
+});
+
+describe("Test 7: Searcher.createSearcherDetailed", function () {
+  it("create searcher and validate", async function () {
+    await Searcher.sync({ force: true });
+    await Requirement.sync({ force: true });
+    await Experience.sync({ force: true });
+    const searcher = await Searcher.createSearcherDetailed({
+      name: "Aaryan Punia",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+      experiences: [
+        {
+          typeOf: "experience",
+          name: "experience",
+          description: "experience description",
+          time: Date.now(),
+        },
+        {
+          typeOf: "education",
+          name: "berkeley",
+          description: "experience description",
+          time: Date.now(),
+        },
+      ],
+      requirement: {
         total: 500000,
         breakdown: {
           salary: 150000,
           expenses: 100000,
         },
-      });
-      const berkeley = await Experience.create({
-        name: "University of California, Berkeley",
-        typeOf: "Education",
-        description: "I studied for x years blah blah",
-        time: Date.now(),
-      });
-      await user.addExperience(berkeley);
-      await user.setRequirement(requirement);
-
-      const result = await Searcher.findByEmail("idontdocoffee@gmail.com");
-      console.log(result.toJSON());
+      },
     });
+    const result = await Searcher.findByEmail(searcher.email);
+    searcherNotNull(result);
+  });
+});
+
+describe("Test 8: Same searcher created again", function () {
+  it("Make searcher 1", async function () {
+    await Searcher.sync({ force: true });
+    const searcher = await Searcher.createSearcherBasic({
+      name: "Aaryan Punia",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const check = await Searcher.ifExists("lund");
+    const check1 = await Searcher.ifExists(searcher.email);
+    assert.isFalse(check, "Returned true on fake email");
+    assert.isNotFalse(check1, "Returned false on real email");
+  });
+});
+
+describe("Test 9: get searcher password", function () {
+  it("Make searcher", async function () {
+    await Searcher.sync({ force: true });
+    const searcher = await Searcher.createSearcherBasic({
+      name: "Aaryan Punia",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const pass = await Searcher.findPassword(searcher.email);
+    assert.equal(pass, searcher.password, "passwords are not equal");
+    console.log(pass);
   });
 });

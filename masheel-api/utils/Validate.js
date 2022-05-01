@@ -2,6 +2,7 @@
  * A module of Validation utility methods.
  * @author: Aaryan Punia
  */
+const assert = require("chai").assert;
 
 /**
  * Email Regex, RFC 5322 Official Standard.
@@ -13,4 +14,17 @@ const validateEmail = (email) => {
   return email.match(emailRegex);
 };
 
-module.exports = { validateEmail };
+const searcherNotNull = (searcher) => {
+  assert.isNotNull(searcher.name, "Searcher name is null");
+  assert.isNotNull(searcher.email, "Searcher email is null");
+  assert.isNotNull(searcher.password, "Searcher password is null");
+  assert.isNotNull(searcher.profilePicture, "Searcher profilePicture is null");
+  assert.isNotNull(searcher.about, "Searcher about is null");
+  assert.isNotNull(searcher.searchTime, "Searcher searchTime is null");
+  assert.isNotNull(
+    searcher.sectorPreference,
+    "Searcher sectorPreference is null"
+  );
+};
+
+module.exports = { validateEmail, searcherNotNull };
