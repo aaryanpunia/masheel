@@ -14,7 +14,7 @@ const validateEmail = (email) => {
   return email.match(emailRegex);
 };
 
-const searcherNotNull = (searcher) => {
+const userNotNull = (searcher) => {
   assert.isNotNull(searcher.name, "Searcher name is null");
   assert.isNotNull(searcher.email, "Searcher email is null");
   assert.isNotNull(searcher.password, "Searcher password is null");
@@ -27,4 +27,4 @@ const searcherNotNull = (searcher) => {
   );
 };
 
-module.exports = { validateEmail, searcherNotNull };
+module.exports = { validateEmail, userNotNull };

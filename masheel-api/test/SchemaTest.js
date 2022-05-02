@@ -5,12 +5,11 @@
 const assert = require("chai").assert;
 const sequelize = require("../models/Config");
 const Experience = require("../models/Experience");
-const Investor = require("../models/Investor");
 const Message = require("../models/Message");
 const Recommendation = require("../models/Recommendation");
 const Requirement = require("../models/Requirement");
-const Searcher = require("../models/Searcher");
-const { searcherNotNull } = require("../utils/Validate");
+const User = require("../models/User");
+const { userNotNull } = require("../utils/Validate");
 
 describe("Basic sequalize Test", function () {
   it("Should work", async function () {
@@ -22,50 +21,33 @@ describe("Basic sequalize Test", function () {
   });
 });
 
-describe("Basic searcher", function () {
-  it("Make a Searcher", async function () {
-    await Searcher.sync({ force: true });
-    const user = await Searcher.create({
+describe("Basic User", function () {
+  it("Make a User", async function () {
+    await User.sync({ force: true });
+    const user = await User.create({
       name: "aaryan",
       password: "aaryanpunia",
       email: "aaryanpunia@gmail.com",
       about: "I like coca cola and Value Investing",
       searchTime: 2000,
     });
-    const found = await Searcher.findOne({ where: { name: "aaryan" } });
-    assert.typeOf(found, "object", "Searcher.create does not return an object");
+    const found = await User.findOne({ where: { name: "aaryan" } });
+    assert.typeOf(found, "object", "User.create does not return an object");
     assert.equal(
       found.name,
       "aaryan",
-      "Searcher.create does not return correct name upon query."
+      "User.create does not return correct name upon query."
     );
-    console.log(found.toJSON());
+    assert.equal(found.name, user.name, "Find returns incorrect user!");
   });
 });
 
-describe("Basic investor", function () {
-  it("Make an Investor", async function () {
-    await Investor.sync({ force: true });
-    const user = await Investor.create({
-      name: "John",
-      password: "password",
-      email: "email@example.com",
-      about: "about",
-    });
-    const found = await Investor.findOne({
-      where: { name: "John", password: "password" },
-    });
-    assert.typeOf(found, "object", "Investor.create does not make an object");
-    assert.equal(found.name, "John", "Investor has wrong name");
-  });
-});
-
-describe("Making a full fledged Searcher", function () {
-  it("Making New Searcher...", async function () {
-    await Searcher.sync({ force: true });
+describe("Making a full fledged User", function () {
+  it("Making New User...", async function () {
+    await User.sync({ force: true });
     await Requirement.sync({ force: true });
     await Experience.sync({ force: true });
-    const user = await Searcher.create({
+    const user = await User.create({
       name: "Shreyaansh Chhabra",
       email: "idontdocoffee@gmail.com",
       password: "valueinvestor4lyf",
@@ -90,17 +72,16 @@ describe("Making a full fledged Searcher", function () {
     await user.addExperience(berkeley);
     await user.setRequirement(requirement);
 
-    const result = await Searcher.findByEmail("idontdocoffee@gmail.com");
-    console.log(result.toJSON());
+    const result = await User.findByEmail("idontdocoffee@gmail.com");
   });
 });
 
-describe("Test 6: Searcher.createSearcherBasic", function () {
-  it("create searcher and validate", async function () {
-    await Searcher.sync({ force: true });
+describe("Test 6: User.createUserBasic", function () {
+  it("create User and validate", async function () {
+    await User.sync({ force: true });
     await Requirement.sync({ force: true });
     await Experience.sync({ force: true });
-    const searcher = await Searcher.createSearcherBasic({
+    const user = await User.createUserBasic({
       name: "Aaryan Punia",
       email: "aaryanpunia@gmail.com",
       password: "password",
@@ -109,16 +90,16 @@ describe("Test 6: Searcher.createSearcherBasic", function () {
       searchTime: 2000,
       sectorPreference: "sector preference",
     });
-    searcherNotNull(searcher);
+    userNotNull(user);
   });
 });
 
-describe("Test 7: Searcher.createSearcherDetailed", function () {
-  it("create searcher and validate", async function () {
-    await Searcher.sync({ force: true });
+describe("Test 7: User.createUserDetailed", function () {
+  it("create User and validate", async function () {
+    await User.sync({ force: true });
     await Requirement.sync({ force: true });
     await Experience.sync({ force: true });
-    const searcher = await Searcher.createSearcherDetailed({
+    const user = await User.createUserDetailed({
       name: "Aaryan Punia",
       email: "aaryanpunia@gmail.com",
       password: "password",
@@ -148,15 +129,15 @@ describe("Test 7: Searcher.createSearcherDetailed", function () {
         },
       },
     });
-    const result = await Searcher.findByEmail(searcher.email);
-    searcherNotNull(result);
+    const result = await User.findByEmail(user.email);
+    userNotNull(result);
   });
 });
 
-describe("Test 8: Same searcher created again", function () {
-  it("Make searcher 1", async function () {
-    await Searcher.sync({ force: true });
-    const searcher = await Searcher.createSearcherBasic({
+describe("Test 8: Same User created again", function () {
+  it("Make User 1", async function () {
+    await User.sync({ force: true });
+    const user = await User.createUserBasic({
       name: "Aaryan Punia",
       email: "aaryanpunia@gmail.com",
       password: "password",
@@ -165,17 +146,17 @@ describe("Test 8: Same searcher created again", function () {
       searchTime: 2000,
       sectorPreference: "sector preference",
     });
-    const check = await Searcher.ifExists("lund");
-    const check1 = await Searcher.ifExists(searcher.email);
+    const check = await User.ifExists("lund");
+    const check1 = await User.ifExists(user.email);
     assert.isFalse(check, "Returned true on fake email");
     assert.isNotFalse(check1, "Returned false on real email");
   });
 });
 
-describe("Test 9: get searcher password", function () {
-  it("Make searcher", async function () {
-    await Searcher.sync({ force: true });
-    const searcher = await Searcher.createSearcherBasic({
+describe("Test 9: get User password", function () {
+  it("Make User", async function () {
+    await User.sync({ force: true });
+    const user = await User.createUserBasic({
       name: "Aaryan Punia",
       email: "aaryanpunia@gmail.com",
       password: "password",
@@ -184,16 +165,15 @@ describe("Test 9: get searcher password", function () {
       searchTime: 2000,
       sectorPreference: "sector preference",
     });
-    const pass = await Searcher.findPassword(searcher.email);
-    assert.equal(pass, searcher.password, "passwords are not equal");
-    console.log(pass);
+    const pass = await User.findPassword(user.email);
+    assert.equal(pass, user.password, "passwords are not equal");
   });
 });
 
-describe("Test 10: update Searcher", function () {
-  it("Make searcher", async function () {
-    await Searcher.sync({ force: true });
-    const searcher = await Searcher.createSearcherBasic({
+describe("Test 10: update User", function () {
+  it("Make User", async function () {
+    await User.sync({ force: true });
+    const user = await User.createUserBasic({
       name: "Aaryan Punia",
       email: "aaryanpunia@gmail.com",
       password: "password",
@@ -208,17 +188,17 @@ describe("Test 10: update Searcher", function () {
         as: "new password",
       },
     ];
-    await Searcher.updateSearcher(searcher.email, updates);
-    const result = await Searcher.findByEmail(searcher.email);
+    await User.updateUser(user.email, updates);
+    const result = await User.findByEmail(user.email);
     assert.equal(result.password, "new password", "Password was not updated!");
   });
 });
 
-describe("Test 11: send message between two searchers", function () {
-  it("Make two searchers and send message", async function () {
-    await Searcher.sync({ force: true });
+describe("Test 11: send message between two Users", function () {
+  it("Make two Users and send message", async function () {
+    await User.sync({ force: true });
     await Message.sync({ force: true });
-    const sender = await Searcher.createSearcherBasic({
+    const sender = await User.createUserBasic({
       name: "Aaryan Punia",
       email: "aaryanpunia@gmail.com",
       password: "password",
@@ -227,7 +207,7 @@ describe("Test 11: send message between two searchers", function () {
       searchTime: 2000,
       sectorPreference: "sector preference",
     });
-    const receiver = await Searcher.create({
+    const receiver = await User.create({
       name: "Shreyaansh Chhabra",
       email: "idontdocoffee@gmail.com",
       password: "password2",
@@ -239,19 +219,17 @@ describe("Test 11: send message between two searchers", function () {
     const message = {
       body: "Hello Shreyaansh",
     };
-    await Searcher.sendMessage(sender.email, message, receiver.email);
-    const result = await Searcher.findByEmail(sender.email);
-    const result1 = await Searcher.findByEmail(receiver.email);
-    console.log(result.toJSON());
-    console.log(result1.toJSON());
+    await User.sendMessage(sender.email, message, receiver.email);
+    const result = await User.findByEmail(sender.email);
+    const result1 = await User.findByEmail(receiver.email);
   });
 });
 
 describe("Find conversation", function () {
   it("Make and find", async function () {
-    await Searcher.sync({ force: true });
+    await User.sync({ force: true });
     await Message.sync({ force: true });
-    const sender = await Searcher.createSearcherBasic({
+    const sender = await User.createUserBasic({
       name: "Warren Buffet",
       email: "aaryanpunia@gmail.com",
       password: "password",
@@ -260,7 +238,7 @@ describe("Find conversation", function () {
       searchTime: 2000,
       sectorPreference: "sector preference",
     });
-    const receiver = await Searcher.create({
+    const receiver = await User.create({
       name: "Shreyaansh Chhabra",
       email: "idontdocoffee@gmail.com",
       password: "password2",
@@ -280,12 +258,12 @@ describe("Find conversation", function () {
     ];
     for (i = 0; i < messages.length; i++) {
       if (i % 2 == 0) {
-        await Searcher.sendMessage(sender.email, messages[i], receiver.email);
+        await User.sendMessage(sender.email, messages[i], receiver.email);
       } else {
-        await Searcher.sendMessage(receiver.email, messages[i], sender.email);
+        await User.sendMessage(receiver.email, messages[i], sender.email);
       }
     }
-    const conversation = await Searcher.findConversation(
+    const conversation = await User.findConversation(
       sender.email,
       receiver.email
     );
@@ -301,8 +279,8 @@ describe("Find conversation", function () {
 
 describe("Test password functions", function () {
   it("Make and compare password", async function () {
-    await Searcher.sync({ force: true });
-    const sender = await Searcher.createSearcherBasic({
+    await User.sync({ force: true });
+    const sender = await User.createUserBasic({
       name: "Warren Buffet",
       email: "aaryanpunia@gmail.com",
       password: "password",
@@ -312,11 +290,11 @@ describe("Test password functions", function () {
       sectorPreference: "sector preference",
     });
     assert.isTrue(
-      await Searcher.verifyPassword(sender.email, "password"),
+      await User.verifyPassword(sender.email, "password"),
       "Returns false for correct password"
     );
     assert.isFalse(
-      await Searcher.verifyPassword(sender.email, sender.email),
+      await User.verifyPassword(sender.email, sender.email),
       "Returns true for incorrect password"
     );
   });
