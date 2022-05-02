@@ -11,6 +11,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("./Config");
 const { validateEmail } = require("../utils/Validate");
 const _ = require("lodash");
+const { encrypt, verify } = require("../utils/Transformations");
 
 const Searcher = sequelize.define("Searcher", {
   id: {
@@ -52,6 +53,11 @@ const Searcher = sequelize.define("Searcher", {
   },
 });
 
+Searcher.beforeCreate(async (searcher, options) => {
+  const hashedPassword = await encrypt(searcher.password);
+  searcher.password = hashedPassword;
+});
+
 /**
  * Defines foreign keys for @module Searcher.
  */
@@ -81,12 +87,13 @@ Message.belongsTo(Searcher, {
 
 /**
  * @method findByEmail
- * a func
+ * @param {string} searcherEmail Email of searcher to be found.
+ * @return {Object} Searcher if found else returns null.
  */
 Searcher.findByEmail = async function (searcherEmail) {
   const searcher = await Searcher.findOne({
     where: { email: searcherEmail },
-    include: [Experience, Requirement, "OutgoingMessages", "IncomingMessages"], //TODO: make seperate method for message search.
+    include: [Experience, Requirement, "OutgoingMessages", "IncomingMessages"],
   });
   return searcher;
 };
@@ -240,6 +247,18 @@ Searcher.findConversation = async function (senderEmail, receiverEmail) {
     },
   ]);
   return conversationSorted;
+};
+
+/**
+ * Verifies if password is correct.
+ * @param {String} searcherEmail Email of Searcher.
+ * @param {String} password Input password.
+ * @returns {boolean}
+ */
+Searcher.verifyPassword = async function (searcherEmail, password) {
+  const searcher = await Searcher.findByEmail(searcherEmail);
+  const originalPass = searcher.password;
+  return await verify(password, originalPass);
 };
 
 module.exports = Searcher;

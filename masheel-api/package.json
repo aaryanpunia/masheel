@@ -10,6 +10,7 @@
   "author": "Aaryan Punia",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "chai": "^4.3.6",
     "dotenv": "^16.0.0",
     "express": "^4.18.0",

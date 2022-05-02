@@ -298,3 +298,26 @@ describe("Find conversation", function () {
     }
   });
 });
+
+describe("Test password functions", function () {
+  it("Make and compare password", async function () {
+    await Searcher.sync({ force: true });
+    const sender = await Searcher.createSearcherBasic({
+      name: "Warren Buffet",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    assert.isTrue(
+      await Searcher.verifyPassword(sender.email, "password"),
+      "Returns false for correct password"
+    );
+    assert.isFalse(
+      await Searcher.verifyPassword(sender.email, sender.email),
+      "Returns true for incorrect password"
+    );
+  });
+});
