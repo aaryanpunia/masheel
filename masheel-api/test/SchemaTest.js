@@ -60,34 +60,6 @@ describe("Basic investor", function () {
   });
 });
 
-describe("Send a message from a searcher", function () {
-  it("Make a Searcher", async function () {
-    await Searcher.sync({ force: true });
-    await Message.sync({ force: true });
-    const user = await Searcher.create({
-      name: "John",
-      password: "password",
-      email: "email@example.com",
-      about: "example",
-      searchTime: 2000,
-    });
-    const message = await Message.create({
-      body: "Hello Aaryan!",
-    });
-    await user.addMessage(message);
-    await message.addSearcher(user);
-    const result = await Searcher.findOne({
-      where: { id: user.id },
-      include: Message,
-    });
-    const result1 = await Message.findOne({
-      where: { id: result.Messages[0].id },
-      include: Searcher,
-    });
-    assert.isObject(result1, "Eerror in Message:User relationship");
-  });
-});
-
 describe("Making a full fledged Searcher", function () {
   it("Making New Searcher...", async function () {
     await Searcher.sync({ force: true });
@@ -215,5 +187,114 @@ describe("Test 9: get searcher password", function () {
     const pass = await Searcher.findPassword(searcher.email);
     assert.equal(pass, searcher.password, "passwords are not equal");
     console.log(pass);
+  });
+});
+
+describe("Test 10: update Searcher", function () {
+  it("Make searcher", async function () {
+    await Searcher.sync({ force: true });
+    const searcher = await Searcher.createSearcherBasic({
+      name: "Aaryan Punia",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const updates = [
+      {
+        set: "password",
+        as: "new password",
+      },
+    ];
+    await Searcher.updateSearcher(searcher.email, updates);
+    const result = await Searcher.findByEmail(searcher.email);
+    assert.equal(result.password, "new password", "Password was not updated!");
+  });
+});
+
+describe("Test 11: send message between two searchers", function () {
+  it("Make two searchers and send message", async function () {
+    await Searcher.sync({ force: true });
+    await Message.sync({ force: true });
+    const sender = await Searcher.createSearcherBasic({
+      name: "Aaryan Punia",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const receiver = await Searcher.create({
+      name: "Shreyaansh Chhabra",
+      email: "idontdocoffee@gmail.com",
+      password: "password2",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const message = {
+      body: "Hello Shreyaansh",
+    };
+    await Searcher.sendMessage(sender.email, message, receiver.email);
+    const result = await Searcher.findByEmail(sender.email);
+    const result1 = await Searcher.findByEmail(receiver.email);
+    console.log(result.toJSON());
+    console.log(result1.toJSON());
+  });
+});
+
+describe("Find conversation", function () {
+  it("Make and find", async function () {
+    await Searcher.sync({ force: true });
+    await Message.sync({ force: true });
+    const sender = await Searcher.createSearcherBasic({
+      name: "Warren Buffet",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const receiver = await Searcher.create({
+      name: "Shreyaansh Chhabra",
+      email: "idontdocoffee@gmail.com",
+      password: "password2",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const messages = [
+      { body: "Dear Mr. Chhabra, it's an honor to meet you in person" },
+      { body: "The pleasure is mine, Mr. Buffett" },
+      {
+        body: "So when are you free to talk about BRK? I'd really like to see you run my business",
+      },
+      { body: "No problem Nigga. Just wire me sum money" },
+      { body: "Okay Mr. Chhabra" },
+    ];
+    for (i = 0; i < messages.length; i++) {
+      if (i % 2 == 0) {
+        await Searcher.sendMessage(sender.email, messages[i], receiver.email);
+      } else {
+        await Searcher.sendMessage(receiver.email, messages[i], sender.email);
+      }
+    }
+    const conversation = await Searcher.findConversation(
+      sender.email,
+      receiver.email
+    );
+    for (i = 0; i < messages.length; i++) {
+      assert.equal(
+        conversation[i].body,
+        messages[i].body,
+        "Wrong order of messages"
+      );
+    }
   });
 });

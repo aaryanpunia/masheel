@@ -4,7 +4,10 @@ const Sequelize = require("sequelize");
 dotenv.config();
 
 const sequelize = new Sequelize(
-  `postgres://${process.env.USERNAME}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.PORT}/${process.env.DBNAME}`
+  `postgres://${process.env.USERNAME}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.PORT}/${process.env.DBNAME}`,
+  {
+    logging: false,
+  }
 );
 
 (async () => {

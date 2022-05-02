@@ -1,5 +1,6 @@
 /**
  * A Schema to represent a Searcher.
+ * @module Searcher
  * @author Aaryan Punia
  */
 const Experience = require("./Experience");
@@ -9,6 +10,7 @@ const Message = require("./Message");
 const { DataTypes } = require("sequelize");
 const sequelize = require("./Config");
 const { validateEmail } = require("../utils/Validate");
+const _ = require("lodash");
 
 const Searcher = sequelize.define("Searcher", {
   id: {
@@ -51,7 +53,7 @@ const Searcher = sequelize.define("Searcher", {
 });
 
 /**
- * Defines foreign keys for @class Searcher.
+ * Defines foreign keys for @module Searcher.
  */
 Searcher.hasMany(Experience);
 Experience.belongsTo(Searcher);
@@ -59,16 +61,32 @@ Searcher.hasMany(Recommendation);
 Recommendation.belongsTo(Searcher);
 Searcher.hasOne(Requirement);
 Requirement.belongsTo(Searcher);
-Searcher.belongsToMany(Message, { through: "SearcherMessage" });
-Message.belongsToMany(Searcher, { through: "SearcherMessage" });
+Searcher.hasMany(Message, {
+  foreignKey: "senderId",
+  as: "OutgoingMessages",
+});
+
+Searcher.hasMany(Message, {
+  foreignKey: "receiverId",
+  as: "IncomingMessages",
+});
+Message.belongsTo(Searcher, {
+  foreignKey: "senderId",
+  as: "Sender",
+});
+Message.belongsTo(Searcher, {
+  foreignKey: "receiverId",
+  as: "Receiver",
+});
 
 /**
- * Utility Methods for @class Searcher
+ * @method findByEmail
+ * a func
  */
 Searcher.findByEmail = async function (searcherEmail) {
   const searcher = await Searcher.findOne({
     where: { email: searcherEmail },
-    include: [Experience, Requirement],
+    include: [Experience, Requirement, "OutgoingMessages", "IncomingMessages"], //TODO: make seperate method for message search.
   });
   return searcher;
 };
@@ -89,7 +107,6 @@ Searcher.createSearcherBasic = async function (searcher) {
       searchTime: searcher.searchTime,
       sectorPreference: searcher.sectorPreference,
     });
-    console.log(result.toJSON());
     return result;
   } catch (err) {
     console.error(err);
@@ -150,15 +167,79 @@ Searcher.findPassword = async function (searcherEmail) {
 /**
  * Updates searcher iff @method ifExists returns true. All params in @param searcher are optional.
  * @param {string} searcherEmail
- * @param {object} updates
- * @return {object}
+ * @param {object} updates has to be of the format [{set: param, as: value}]
+ * @return {null}
  */
-Searcher.updateSearcher() = async function (searcherEmail, updates) {
+Searcher.updateSearcher = async function (searcherEmail, updates) {
   if (!(await Searcher.ifExists(searcherEmail))) {
     throw new Error("Searcher does not exist");
+  } else if (
+    updates.length == 0 ||
+    updates[0].set == null ||
+    updates[0].as == null
+  ) {
+    throw new Error("Incorrect updates format");
   } else {
-    
+    for (i = 0; i < updates.length; i++) {
+      await Searcher.update(
+        { [updates[i].set]: updates[i].as },
+        {
+          where: {
+            email: searcherEmail,
+          },
+        }
+      );
+    }
   }
-}
+};
+
+/**
+ * Creates a message and sends it to Searcher with email @param searcherEmail iff @method ifExists returns true.
+ * @param {string} searcherEmail
+ * @param {Object} sendThisMessage See schema in Message.js for details.
+ * @param {string} receiverEmail
+ * @alias Searcher.sendMessage
+ */
+Searcher.sendMessage = async function (
+  searcherEmail,
+  sendThisMessage,
+  receiverEmail
+) {
+  if (
+    !(await Searcher.ifExists(searcherEmail)) ||
+    !(await Searcher.ifExists(receiverEmail))
+  ) {
+    throw new Error("Sender or receiver does not exist");
+  } else {
+    const message = await Message.create(sendThisMessage);
+    const sender = await Searcher.findByEmail(searcherEmail);
+    const receiver = await Searcher.findByEmail(receiverEmail);
+    await message.setSender(sender);
+    await message.setReceiver(receiver);
+  }
+};
+
+/**
+ * @param {String} receiverEmail
+ * @param {String} senderEmail
+ * @return {conversationSorted}, an array of format [{message}...] sorted by Time of creation.
+ */
+Searcher.findConversation = async function (senderEmail, receiverEmail) {
+  const sender = await Searcher.findByEmail(senderEmail);
+  const receiver = await Searcher.findByEmail(receiverEmail);
+  const messages = _.union(
+    sender.toJSON().OutgoingMessages,
+    sender.toJSON().IncomingMessages
+  );
+  const conversation = _.filter(messages, function (message) {
+    return message.receiverId == receiver.id || message.senderId == receiver.id;
+  });
+  const conversationSorted = _.sortBy(conversation, [
+    function (o) {
+      return o.timestamp;
+    },
+  ]);
+  return conversationSorted;
+};
 
 module.exports = Searcher;

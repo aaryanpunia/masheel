@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
-    "test": "mocha"
+    "test": "mocha --timeout 10000"
   },
   "author": "Aaryan Punia",
   "license": "ISC",
@@ -13,6 +13,8 @@
     "chai": "^4.3.6",
     "dotenv": "^16.0.0",
     "express": "^4.18.0",
+    "jsdoc": "^3.6.10",
+    "lodash": "^4.17.21",
     "mocha": "^9.2.2",
     "nodemon": "^2.0.15",
     "pg": "^8.7.3",
