@@ -4,6 +4,7 @@
  */
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
+const jwt = require("jsonwebtoken");
 dotenv.config();
 
 /**
@@ -31,4 +32,13 @@ async function verify(input, password) {
   return await bcrypt.compare(input, password);
 }
 
-module.exports = { encrypt, verify };
+/**
+ * Signs the payload with the TOKEN_SECRET and returns a JSONWEBTOKEN.
+ * @param {object} payload
+ * @returns {string}
+ */
+function sign(payload) {
+  return jwt.sign(payload, process.env.TOKEN_SECRET, { expiresIn: "1500s" });
+}
+
+module.exports = { encrypt, verify, sign };

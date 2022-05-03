@@ -1,6 +1,23 @@
 const express = require("express");
 const app = express();
-const sequelize = require("./models/Config");
+
+/**
+ * Import routes.
+ */
+const PostUser = require("./routes/PostUser");
+
+app.use("/user", PostUser);
+
+/**
+ * 404 Route Handling.
+ */
+app.use((req, res, next) => {
+  res
+    .status(404)
+    .send(
+      "Ohh you are lost, read the API documentation to find your way back home :)"
+    );
+});
 
 const PORT = 3000;
 app.listen(PORT, (err) => {

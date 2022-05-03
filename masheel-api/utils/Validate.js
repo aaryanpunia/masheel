@@ -14,17 +14,26 @@ const validateEmail = (email) => {
   return email.match(emailRegex);
 };
 
-const userNotNull = (searcher) => {
-  assert.isNotNull(searcher.name, "Searcher name is null");
-  assert.isNotNull(searcher.email, "Searcher email is null");
-  assert.isNotNull(searcher.password, "Searcher password is null");
-  assert.isNotNull(searcher.profilePicture, "Searcher profilePicture is null");
-  assert.isNotNull(searcher.about, "Searcher about is null");
-  assert.isNotNull(searcher.searchTime, "Searcher searchTime is null");
-  assert.isNotNull(
-    searcher.sectorPreference,
-    "Searcher sectorPreference is null"
+const userNotNull = (user) => {
+  assert.isNotNull(user.name, "user name is null");
+  assert.isNotNull(user.email, "user email is null");
+  assert.isNotNull(user.password, "user password is null");
+  assert.isNotNull(user.profilePicture, "user profilePicture is null");
+  assert.isNotNull(user.about, "user about is null");
+  assert.isNotNull(user.searchTime, "user searchTime is null");
+  assert.isNotNull(user.sectorPreference, "user sectorPreference is null");
+};
+/**
+ * Returns true iff @param user is invalid.
+ * @param {object} user JSON object representing a user.
+ */
+const invalidUser = (user) => {
+  return (
+    user.name == null &&
+    user.email == null &&
+    user.password == null &&
+    searchTime == null
   );
 };
 
-module.exports = { validateEmail, userNotNull };
+module.exports = { validateEmail, userNotNull, invalidUser };
