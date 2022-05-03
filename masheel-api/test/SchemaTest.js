@@ -299,3 +299,20 @@ describe("Test password functions", function () {
     );
   });
 });
+
+describe("Test secure find users", function () {
+  it("Make and find users", async function () {
+    await User.sync({ force: true });
+    const sender = await User.createUserBasic({
+      name: "Warren Buffet",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const result = await User.findUserSecure(sender.email);
+    console.log(result);
+  });
+});

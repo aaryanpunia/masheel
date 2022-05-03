@@ -1,13 +1,14 @@
 const express = require("express");
 const app = express();
+const { authenticateToken } = require("./utils/Middleware");
 
 /**
  * Import routes.
  */
-const PostUser = require("./routes/PostUser");
-
-app.use("/user", PostUser);
-
+const userRoute = require("./routes/UserRoute");
+const Secure = require("./routes/Secure");
+app.use("/user", userRoute);
+app.use("/secure", authenticateToken, Secure);
 /**
  * 404 Route Handling.
  */

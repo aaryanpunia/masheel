@@ -257,4 +257,24 @@ User.verifyPassword = async function (userEmail, password) {
   return await verify(password, originalPass);
 };
 
+/**
+ * Securely returns a User's information for client side use.
+ * @param {string} userEmail
+ * @return {object} user iff @method ifExists returns true. else returns null.
+ */
+User.findUserSecure = async function (userEmail) {
+  if (!(await User.ifExists)) {
+    throw new Error("User not found");
+  } else {
+    var result = {};
+    const user = (await User.findByEmail(userEmail)).toJSON();
+    for (const [key, value] of Object.entries(user)) {
+      if (key != ["password"]) {
+        result[key] = value;
+      }
+    }
+    return result;
+  }
+};
+
 module.exports = User;
