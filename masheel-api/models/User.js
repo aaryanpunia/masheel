@@ -116,7 +116,7 @@ User.createUserBasic = async function (user) {
     });
     return result;
   } catch (err) {
-    console.error(err);
+    throw new Error(err.message);
   }
 };
 
@@ -188,14 +188,20 @@ User.updateUser = async function (userEmail, updates) {
     throw new Error("Incorrect updates format");
   } else {
     for (i = 0; i < updates.length; i++) {
-      await User.update(
-        { [updates[i].set]: updates[i].as },
-        {
-          where: {
-            email: userEmail,
-          },
-        }
-      );
+      if (updates[i].set == null || updates[i].as == null) {
+        continue;
+      }
+
+      if (updates[i].set != "email" || updates[i].set != "password") {
+        await User.update(
+          { [updates[i].set]: updates[i].as },
+          {
+            where: {
+              email: userEmail,
+            },
+          }
+        );
+      }
     }
   }
 };

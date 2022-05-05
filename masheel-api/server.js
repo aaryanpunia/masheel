@@ -6,9 +6,11 @@ const { authenticateToken } = require("./utils/Middleware");
  * Import routes.
  */
 const userRoute = require("./routes/UserRoute");
-const Secure = require("./routes/Secure");
+const messageRoute = require("./routes/MessageRoute");
+const resetRoute = require("./routes/ResetRoute");
 app.use("/user", userRoute);
-app.use("/secure", authenticateToken, Secure);
+app.use("/message", authenticateToken, messageRoute);
+app.use("/reset", resetRoute);
 /**
  * 404 Route Handling.
  */

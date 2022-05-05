@@ -29,11 +29,20 @@ const userNotNull = (user) => {
  */
 const invalidUser = (user) => {
   return (
-    user.name == null &&
-    user.email == null &&
-    user.password == null &&
-    searchTime == null
+    Object.entries(user).length == 0 ||
+    user.name == null ||
+    user.email == null ||
+    user.password == null ||
+    user.searchTime == null
   );
 };
 
-module.exports = { validateEmail, userNotNull, invalidUser };
+const invalidUserLogin = (user) => {
+  return (
+    Object.entries(user).length == 0 ||
+    user.password == null ||
+    user.email == null
+  );
+};
+
+module.exports = { validateEmail, userNotNull, invalidUser, invalidUserLogin };

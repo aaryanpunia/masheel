@@ -36,7 +36,10 @@ router.post("/", express.json({ type: "*/*" }), async (req, res) => {
       req.body[0],
       req.body[1].receiver
     );
+    res.status(200).send("Message successfully sent");
   } catch (err) {
     res.status(400).send("Messaging unsuccessful: " + err.message);
   }
 });
+
+module.exports = router;

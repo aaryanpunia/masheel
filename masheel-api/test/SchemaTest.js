@@ -184,13 +184,14 @@ describe("Test 10: update User", function () {
     });
     const updates = [
       {
-        set: "password",
-        as: "new password",
+        set: "about",
+        as: "hey@gmail.com",
       },
     ];
     await User.updateUser(user.email, updates);
     const result = await User.findByEmail(user.email);
-    assert.equal(result.password, "new password", "Password was not updated!");
+    console.log(result.toJSON());
+    assert.equal(result.about, "hey@gmail.com", "Password was not updated!");
   });
 });
 
@@ -314,5 +315,12 @@ describe("Test secure find users", function () {
     });
     const result = await User.findUserSecure(sender.email);
     console.log(result);
+  });
+});
+
+describe("check smthn", function () {
+  it("check smthn", async function () {
+    await User.sync({ force: true });
+    console.log(User.rawAttributes);
   });
 });
