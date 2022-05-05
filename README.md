@@ -130,35 +130,23 @@ Defines endpoint as _endpoint_ with params **_param1_**...**_paramN_** that retu
 - _endpoint_ : Get endpoint with params **_param1_**...**_paramN_**. Returns type TYPE and value VALUE.
   > Called using masheel-api.com/endpoint/:endpoint syntax.
 
-**Get Endpoints**
+### User endpoints
 
-_get user_ : Get endpoint with params **_userID_**, **_userName_**, or **_userEmail_**. Returns type Investor or Searcher.
+> masheel-api.com/user
 
-> masheel-api.com/getuser/userID/:userID | masheel-api.com/getuser/userName/:userName | masheel-api.com/getuser/userEmail/:userEmail
+**SUPPORTS : GET | POST | PUT**
 
-_get messages_ : Get endpoint with param **_userID_**. Returns type messages:{received: message[], send: message[]}.
+GET - Login User.
+POST - Create/Signup User.
+PUT - Update User.
 
-> masheel-api.com/getmessages/userID/:userID
+### Message endpoints
 
-_get user auth_ : Get endpoint with param **_userEmail_** and **_userPassword_**. Returns JWT payload which contains **_userName_**, **\*userEmail**, and **_userId_**.
+> masheel-api.com/message
 
-**Post Endpoints**
-
-_post user_ : Post endpoint with params **_userName_**, **_userEmail_**, **_invOrSearch(boolean)_**. Returns type success or failure. HTTP code 200(Success) or 400(Bad request).
-
-> masheel-api.com/postuser/userName/:userName/userEmail/:userEmail/invOrSearch/:invOrSearch
-
-_post userdetail_ : Post endpoint with no params and content **_userDetail_** object. Returns code 200(Success) or 400(Bad request).
-
-> masheel-api.com/postuserdetail/
-
-_post userRecommendation_ : Post endpoint with params **_userID_**, **_recommendation_**, **_sender_**. Returns code 200(Success) or 400(Bad request).
-
-> masheel-api.com/postuserrec/userID/:userID/recomm/:recomm
-
-_post message_ : Post endpoint with params **_senderID_**, **_receiverID_**, **_messageBody_**, **_timeStamp_**. Returns code 200(Success) or 400(Bad request).
-
-> masheel-api.com/postmessage/senderID/:senderID/receiverID/:receiverID/messageBody/:messageBody
+**SUPPORTS : GET : POST**
+GET - Find Conversation b/w two users.
+POST - Send a message to another user
 
 **Middleware**
 
