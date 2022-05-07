@@ -51,6 +51,18 @@ const User = sequelize.define("User", {
   sectorPreference: {
     type: DataTypes.STRING,
   },
+  connectionRequestsReceived: {
+    type: DataTypes.ARRAY[DataTypes.String],
+  },
+  connectionRequestsSent: {
+    type: DataTypes.ARRAY[DataTypes.String],
+  },
+  connections: {
+    type: DataTypes.ARRAY[DataTypes.String],
+  },
+  openToConnections: {
+    type: DataTypes.BOOLEAN,
+  },
 });
 
 User.beforeCreate(async (user, options) => {
@@ -282,5 +294,68 @@ User.findUserSecure = async function (userEmail) {
     return result;
   }
 };
+
+/**
+ * Sends a request to connect from a sender to a receiver.
+ * @param {String} reqReceiver : Email of the receiver of this request.
+ * @param {String} reqSender : Email of the sender of this request.
+ * @param {boolean} withMessage : if true, send a message with this request as well.
+ * @param {object} message : A message with the message schema, send iff withMessage is true.
+ */
+User.sendConnectionRequest = async function (
+  reqSender,
+  reqReceiver,
+  withMessage,
+  message
+) {
+  if (!(await User.ifExists(reqReceiver))) {
+    throw new Error("Sender does not exist!");
+  }
+  const sender = await User.findByEmail(reqSender);
+  const receiver = await User.findByEmail(reqReceiver);
+  sender.connectionRequestsSent.push(reqReceiver);
+  receiver.connectionRequestsReceived.push(reqSender);
+  await sender.save();
+  await receiver.save();
+  if (withMessage) {
+    await User.sendMessage(reqSender, message, reqReceiver);
+  }
+};
+
+/**
+ * If reqSender's request is in this User's received requests, returns the index, undefined otherwise.
+ * @param {String} reqSender : Email of sender of this request.
+ * @param {String} userEmail : Email of this user.
+ */
+User.ifRequestExists = async function (reqSender, userEmail) {
+  const sender = await User.findByEmail(reqSender);
+  const user = await User.findByEmail(userEmail);
+  for (i = 0; i < user.connectionRequestsReceived.length; i++) {
+    if (user.connectionRequestsReceived[i] == sender.email) {
+      return i;
+    }
+  }
+  return undefined;
+};
+
+/**
+ * Accepts reqSender's request iff the request exists and removes it from this user's list
+ * of requests received and both users to each other's connections. Also removes this reqSender's
+ * sent request from their list of connections sent.
+ * @param {String} reqSender : Email of sender of this request.
+ * @param {String} userEmail : Email of this user.
+ */
+User.acceptRequest = async function (reqSender, userEmail) {
+  const sender = await User.findByEmail(reqSender);
+  const user = await User.findByEmail(userEmail);
+  const index = await User.ifRequestExists(reqSender, userEmail);
+  if (index != undefined) {
+    user.connectionRequestsReceived;
+  } else {
+    throw new Error("Connection request does not exist!");
+  }
+};
+
+//TODO: Make a proper connections system and integrate it with messages.
 
 module.exports = User;

@@ -27,14 +27,18 @@ router.get("/", express.json({ type: "*/*" }), async (req, res) => {
 
 /**
  * A post endpoint for messages.
- * @param {object} req.body must be a JSON of the format [{"body":body}, {"receiver":receiverEmail}].
+ * @param {object} req.body must be a JSON of the format MESSAGE FOR DEBUGGING AND SEND ONE MESSAGE AT A TIME IN PRODUCTION. //TODO: Make USER have connections and only allow receiver to be a connection.
+ * MESSAGE = {
+ *  "body": body,
+ *  "receiver": receiver's email address
+ * }
  */
 router.post("/", express.json({ type: "*/*" }), async (req, res) => {
   try {
     await User.sendMessage(
       req.token.user.email,
       req.body[0],
-      req.body[1].receiver
+      req.body[0].receiver
     );
     res.status(200).send("Message successfully sent");
   } catch (err) {

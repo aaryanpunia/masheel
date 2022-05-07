@@ -324,3 +324,7 @@ describe("check smthn", function () {
     console.log(User.rawAttributes);
   });
 });
+
+describe("Send and accept connection request", function () {
+  it("Send and accept connection request", async function () {});
+});
