@@ -326,5 +326,37 @@ describe("check smthn", function () {
 });
 
 describe("Send and accept connection request", function () {
-  it("Send and accept connection request", async function () {});
+  it("Send and accept connection request", async function () {
+    await User.sync({ force: true });
+    const sender = await User.createUserBasic({
+      name: "Warren Buffet",
+      email: "aaryanpunia@gmail.com",
+      password: "password",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+    const receiver = await User.create({
+      name: "Shreyaansh Chhabra",
+      email: "idontdocoffee@gmail.com",
+      password: "password2",
+      profilePicture: "profile picture",
+      about: "about",
+      searchTime: 2000,
+      sectorPreference: "sector preference",
+    });
+
+    await User.sendConnectionRequest(sender.email, receiver.email);
+
+    await User.acceptRequest(sender.email, receiver.email);
+
+    const result = await User.findByEmail(sender.email);
+    const result1 = await User.findByEmail(receiver.email);
+
+    const connections = await User.findConnections(sender.email);
+    const connection1 = await User.findConnections(receiver.email);
+    console.log(connection1);
+    console.log(connections);
+  });
 });

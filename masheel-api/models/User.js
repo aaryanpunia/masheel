@@ -52,13 +52,10 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
   },
   connectionRequestsReceived: {
-    type: DataTypes.ARRAY[DataTypes.String],
+    type: DataTypes.JSON,
   },
   connectionRequestsSent: {
-    type: DataTypes.ARRAY[DataTypes.String],
-  },
-  connections: {
-    type: DataTypes.ARRAY[DataTypes.String],
+    type: DataTypes.JSON,
   },
   openToConnections: {
     type: DataTypes.BOOLEAN,
@@ -313,29 +310,31 @@ User.sendConnectionRequest = async function (
   }
   const sender = await User.findByEmail(reqSender);
   const receiver = await User.findByEmail(reqReceiver);
-  sender.connectionRequestsSent.push(reqReceiver);
-  receiver.connectionRequestsReceived.push(reqSender);
-  await sender.save();
-  await receiver.save();
+  await User.update(
+    { connectionRequestsSent: { [reqReceiver]: "sent" } },
+    { where: { email: sender.email } }
+  );
+  await User.update(
+    { connectionRequestsReceived: { [reqSender]: "received" } },
+    { where: { email: receiver.email } }
+  );
   if (withMessage) {
     await User.sendMessage(reqSender, message, reqReceiver);
   }
 };
 
 /**
- * If reqSender's request is in this User's received requests, returns the index, undefined otherwise.
+ * If reqSender's request is in this User's received requests, returns true, false otherwise.
  * @param {String} reqSender : Email of sender of this request.
  * @param {String} userEmail : Email of this user.
  */
 User.ifRequestExists = async function (reqSender, userEmail) {
   const sender = await User.findByEmail(reqSender);
   const user = await User.findByEmail(userEmail);
-  for (i = 0; i < user.connectionRequestsReceived.length; i++) {
-    if (user.connectionRequestsReceived[i] == sender.email) {
-      return i;
-    }
-  }
-  return undefined;
+  return (
+    user.toJSON().connectionRequestsReceived.hasOwnProperty(sender.email) &&
+    user.toJSON().connectionRequestsReceived[sender.email] == "received"
+  );
 };
 
 /**
@@ -348,14 +347,66 @@ User.ifRequestExists = async function (reqSender, userEmail) {
 User.acceptRequest = async function (reqSender, userEmail) {
   const sender = await User.findByEmail(reqSender);
   const user = await User.findByEmail(userEmail);
-  const index = await User.ifRequestExists(reqSender, userEmail);
-  if (index != undefined) {
-    user.connectionRequestsReceived;
+  if (await User.ifRequestExists(reqSender, userEmail)) {
+    await User.update(
+      { connectionRequestsReceived: { [reqSender]: "accepted" } },
+      { where: { email: user.email } }
+    );
+    await User.update(
+      { connectionRequestsSent: { [userEmail]: "accepted" } },
+      { where: { email: sender.email } }
+    );
   } else {
     throw new Error("Connection request does not exist!");
   }
 };
 
-//TODO: Make a proper connections system and integrate it with messages.
+/**
+ * Returns a list of all the requests that this user has received and sent which have the status of "accepted".
+ * @param {String} userEmail : Email of this user.
+ */
+User.findConnections = async function (userEmail) {
+  if (!(await User.ifExists)) {
+    throw new Error("User does not exist");
+  }
+  const user = await User.findByEmail(userEmail);
+  const details = user.toJSON();
+  result = [];
+  if (details.connectionRequestsReceived != null) {
+    for (
+      i = 0;
+      i < Object.keys(details.connectionRequestsReceived).length;
+      i++
+    ) {
+      var key = Object.keys(details.connectionRequestsReceived)[i];
+      if (details.connectionRequestsReceived[key] === "accepted") {
+        result.push(key);
+      }
+    }
+  }
+  if (details.connectionRequestsSent != null) {
+    for (i = 0; i < Object.keys(details.connectionRequestsSent).length; i++) {
+      var key = Object.keys(details.connectionRequestsSent)[i];
+      if (details.connectionRequestsSent[key] === "accepted") {
+        result.push(key);
+      }
+    }
+  }
+  return result;
+};
+
+/**
+ * @param {String} userEmail : Email of this user.
+ * @param {String} connectionEmail : Email of another user.
+ * @returns True iff @param connectionEmail is of status accepted in received or sent connection requests for this user.
+ */
+User.ifConnection = async function (userEmail, connectionEmail) {
+  const user = await User.findByEmail(userEmail);
+  const details = user.toJSON();
+  return (
+    details.connectionRequestsReceived[connectionEmail] == "accepted" ||
+    details.connectionRequestsSent[connectionEmail] == "accepted"
+  );
+};
 
 module.exports = User;

@@ -7,9 +7,11 @@ const { authenticateToken } = require("./utils/Middleware");
  */
 const userRoute = require("./routes/UserRoute");
 const messageRoute = require("./routes/MessageRoute");
+const connectionRoute = require("./routes/ConnectionRoute");
 const resetRoute = require("./routes/ResetRoute");
 app.use("/user", userRoute);
 app.use("/message", authenticateToken, messageRoute);
+app.use("/connection", authenticateToken, connectionRoute);
 app.use("/reset", resetRoute);
 /**
  * 404 Route Handling.
